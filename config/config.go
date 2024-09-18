@@ -15,8 +15,9 @@ const (
 )
 
 type Config struct {
-	Redis       Redis
-	Env string
+	Redis    Redis
+	Env      string
+	Postgres Postgres
 }
 
 var cfg *Config = &Config{}

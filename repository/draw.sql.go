@@ -30,3 +30,39 @@ func (q *Queries) CreateMatch(ctx context.Context, db DBTX, arg CreateMatchParam
 	err := row.Scan(&i.ID, &i.HostID, &i.GuestID)
 	return i, err
 }
+
+const getMatches = `-- name: GetMatches :many
+SELECT 
+d.id, 
+host.name as host_name, 
+away.name as away_name 
+FROM draws as d
+Join clubs as host on d.host_id = host.id
+Join clubs as away on d.guest_id = away.id
+`
+
+type GetMatchesRow struct {
+	ID       int64
+	HostName string
+	AwayName string
+}
+
+func (q *Queries) GetMatches(ctx context.Context, db DBTX) ([]GetMatchesRow, error) {
+	rows, err := db.Query(ctx, getMatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMatchesRow
+	for rows.Next() {
+		var i GetMatchesRow
+		if err := rows.Scan(&i.ID, &i.HostName, &i.AwayName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -26,11 +26,17 @@ type Match struct {
 	AwayClubId int
 }
 
-func (s *Service) Draw(ctx context.Context) ([]Match, error) {
+type MatchName struct {
+	MatchId int64
+	Home    string
+	Away    string
+}
+
+func (s *Service) Draw(ctx context.Context) error {
 	var matches []Match
 	clubs, err := s.repo.GetAllClubs(ctx, s.db)
 	if err != nil {
-		return nil, errors.New("something went wrong")
+		return errors.New("something went wrong")
 	}
 	seeds := make(map[int32][]Club)
 	for _, c := range clubs {
@@ -70,7 +76,7 @@ func (s *Service) Draw(ctx context.Context) ([]Match, error) {
 			}
 		}
 		if clubMatches != 8 {
-			return nil, fmt.Errorf("unable to generate 8 matches for club: %s", c.Name)
+			return fmt.Errorf("unable to generate 8 matches for club: %s", c.Name)
 		}
 	}
 	for _, m := range matches {
@@ -82,10 +88,26 @@ func (s *Service) Draw(ctx context.Context) ([]Match, error) {
 				GuestID: int32(m.AwayClubId),
 			})
 		if err != nil {
-			return nil, errors.New("something went wrong")
+			return errors.New("something went wrong")
 		}
 	}
-	return matches, nil
+	return nil
+}
+
+func (s *Service) DrawResult(ctx context.Context) ([]MatchName, error) {
+	matches, err := s.repo.GetMatches(ctx, s.db)
+	if err != nil {
+		return nil, errors.New("something went wrong")
+	}
+	matchNames := make([]MatchName, len(matches))
+	for i, m := range matches {
+		matchNames[i] = MatchName{
+			Home:    m.HostName,
+			Away:    m.AwayName,
+			MatchId: m.ID,
+		}
+	}
+	return matchNames, nil
 }
 
 func NewService(

@@ -2,8 +2,11 @@
 INSERT INTO clubs (
   name,
   nationality,
-  sedd
+  seed
 ) VALUES (
   $1, $2, $3
 )
 RETURNING *;
+
+-- name: GetAllClubs :many
+SELECT * FROM clubs;

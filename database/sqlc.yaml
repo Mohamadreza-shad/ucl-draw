@@ -3,8 +3,7 @@ sql:
 - schema: "migrations/"
   queries: 
     - "club.sql"
-    - "draws.sql"
-    
+    - "draw.sql"
   engine: "postgresql"
   gen:
     go: 
